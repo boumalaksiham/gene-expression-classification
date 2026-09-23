@@ -1,0 +1,8 @@
+,value
+samples,72.0
+all_samples,47.0
+aml_samples,25.0
+expression_features,7129.0
+selected_features_per_cv_fold,100.0
+pca_variance_pc1,0.2256872792639951
+pca_variance_pc2,0.11655104873505438
