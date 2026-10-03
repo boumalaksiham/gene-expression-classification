@@ -33,7 +33,7 @@ The project asks two main questions:
 | Features selected within each CV fold | **100** |
 | Task | Binary classification: ALL vs AML |
 
-The normalized dataset is downloaded automatically by the analysis script.
+The normalized dataset is cached in `data/raw/golub.csv`, which is included in this checkout. The script downloads it only when the cached file is missing; see [raw-data provenance](data/raw/README.md).
 
 Original study:
 
@@ -124,7 +124,7 @@ The later supervised models can still perform strongly because they select expre
 
 ## 2. Cross-Validated Model Comparison
 
-Three classifiers were evaluated using the same **stratified 5-fold cross-validation** protocol.
+Three classifiers were evaluated using the same **stratified 5-fold cross-validation** protocol. Table entries are the mean ± sample standard deviation across the five folds (`ddof=1`), not confidence intervals. Fold outcomes are not independent replications.
 
 | Model | Accuracy | Balanced Accuracy | F1 | ROC-AUC |
 |---|---:|---:|---:|---:|
@@ -228,21 +228,11 @@ A positive coefficient means higher expression pushes the fitted model toward **
 
 ---
 
-## Biological Context Check
+## Probe annotation context
 
-Several highly ranked probe accessions correspond to biologically recognizable genes:
+The saved ranking uses historical Affymetrix probe identifiers. The current analysis script does not query an annotation service or validate gene-symbol mappings. Treat coefficients as probe-level exploratory model results.
 
-| Probe / accession | Gene / historical description | Direction in exploratory model |
-|---|---|---|
-| **Y07604_at** | **NME4 / nm23-H4**, mitochondrial nucleoside-diphosphate kinase | AML |
-| **U82759_at** | **HOXA9** | AML |
-| **J02783_at** | **P4HB**, protein disulfide-isomerase / prolyl 4-hydroxylase beta subunit | AML |
-| **M31303_rna1_at** | **STMN1 / Oncoprotein 18** | ALL in this fitted multivariable model |
-| **M92287_at** | **CCND3 / Cyclin D3** | ALL in this fitted multivariable model |
-
-Previous leukemia gene-selection studies have independently reported several of these accession IDs, including **Y07604, M31303, and M92287**, among discriminatory or repeatedly selected leukemia-expression features.
-
-This provides a useful **literature consistency check**, but it does not prove that the current feature ranking is a clinically validated biomarker signature.
+A biological interpretation should record the annotation release, map each probe carefully, and cite the supporting literature. The ranking is not an independently validated biomarker signature.
 
 ---
 
@@ -253,7 +243,7 @@ This provides a useful **literature consistency check**, but it does not prove t
 3. **Logistic Regression** achieved the highest mean accuracy (**97.1%**) and F1 (**0.960**).
 4. The pooled out-of-fold Logistic Regression predictions correctly classified **70 of 72 patients**.
 5. Random Forest and XGBoost achieved extremely high ranking performance, with fold-wise mean ROC-AUC values of **1.000**.
-6. Several highly ranked probes correspond to genes with prior biological or leukemia-related literature support.
+6. The saved ranking provides historical probe identifiers for follow-up annotation and biological review.
 7. Because the cohort is small and high-dimensional, the predictive feature ranking should be treated as exploratory rather than as a biomarker discovery claim.
 
 ---
@@ -390,14 +380,6 @@ gene-expression-classification/
 ## References
 
 Golub TR, Slonim DK, Tamayo P, et al. **Molecular Classification of Cancer: Class Discovery and Class Prediction by Gene Expression Monitoring.** *Science*. 1999.
-
-Additional literature used only as a biological consistency check for selected probe accessions:
-
-- Y07604 / nm23-H4 (NME4): mitochondrial nucleoside-diphosphate kinase.
-- U82759: HOXA9.
-- J02783: P4HB.
-- M31303: Oncoprotein 18 / STMN1.
-- M92287: CCND3.
 
 ---
 
