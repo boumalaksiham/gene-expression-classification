@@ -96,7 +96,7 @@ To reduce this risk, feature selection is placed **inside the scikit-learn pipel
 
 ---
 
-# Results
+## Results
 
 ## 1. Principal Component Analysis
 
@@ -246,7 +246,7 @@ This provides a useful **literature consistency check**, but it does not prove t
 
 ---
 
-# Key Findings
+## Key Findings
 
 1. The first two PCA dimensions explain about **34.2%** of total expression variation but do not cleanly separate ALL from AML.
 2. Leakage-safe supervised models nevertheless classify the two leukemia groups with high cross-validated performance.
@@ -258,7 +258,7 @@ This provides a useful **literature consistency check**, but it does not prove t
 
 ---
 
-# Statistical and Machine-Learning Notes
+## Statistical and Machine-Learning Notes
 
 ## Stratified Cross-Validation
 
@@ -292,7 +292,7 @@ It is therefore possible for a model to have a near-perfect ROC-AUC while still 
 
 ---
 
-# Limitations
+## Limitations
 
 This analysis has several important limitations:
 
@@ -309,7 +309,7 @@ This analysis has several important limitations:
 
 ---
 
-# Reproducibility
+## Reproducibility
 
 Install dependencies:
 
@@ -337,7 +337,7 @@ The script will:
 
 ---
 
-# Repository Structure
+## Repository Structure
 
 ```text
 gene-expression-classification/
@@ -371,7 +371,7 @@ gene-expression-classification/
 
 ---
 
-# Tools and Methods
+## Tools and Methods
 
 | Area | Tools / Methods |
 |---|---|
@@ -387,7 +387,7 @@ gene-expression-classification/
 
 ---
 
-# References
+## References
 
 Golub TR, Slonim DK, Tamayo P, et al. **Molecular Classification of Cancer: Class Discovery and Class Prediction by Gene Expression Monitoring.** *Science*. 1999.
 
@@ -401,10 +401,25 @@ Additional literature used only as a biological consistency check for selected p
 
 ---
 
-# Author
+## Author
 
 **Siham Boumalak**  
 M.S. Artificial Intelligence  
 Northeastern University
 
 Research interests include **biomedical informatics, computational biology, transcriptomics, machine learning, trustworthy AI, and reproducible computational research**.
+
+## Reproduction notes
+
+Start in the repository root and use a separate environment:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python scripts/run_analysis.py
+```
+
+On Windows use `.venv\Scripts\Activate.ps1`. Existing output files can be overwritten; preserve committed results separately before comparing a rerun. Requirements are not a complete environment lock. Record package versions and input checksums alongside generated tables. Committed figures and tables document a previous run; this documentation update did not rerun the analysis.
+
+Classification metrics describe five-fold stratified cross-validation on this dataset, not independent external validation. Feature selection is inside each model pipeline. PCA and full-data probe rankings are exploratory and should not be interpreted as externally validated biomarkers.
