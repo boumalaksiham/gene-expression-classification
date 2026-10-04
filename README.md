@@ -1,6 +1,6 @@
 # Gene Expression Classification — Golub Leukemia Dataset
 
-> A reproducible machine-learning analysis of high-dimensional leukemia microarray data.
+An analysis of 72 leukemia samples with 7,129 expression features, comparing three classifiers while selecting features within each cross-validation fold.
 
 **Python · Gene Expression · Microarray · PCA · Feature Selection · Logistic Regression · Random Forest · XGBoost · Cross-Validation**
 
@@ -41,50 +41,15 @@ Original study:
 
 ---
 
-## Analysis Workflow
+## Analysis workflow
 
-```text
-Golub gene-expression matrix
-            |
-            v
-     Data / label checks
-            |
-            v
-    Exploratory PCA
-            |
-            v
- Zero-variance filtering
-            |
-            v
- Univariate feature selection
-   inside each CV training fold
-            |
-            v
-      Model comparison
-    /        |         \
-Logistic   Random     XGBoost
-Regression Forest
-    \        |         /
-     Stratified 5-fold CV
-            |
-            v
- Accuracy / Balanced Accuracy
-       F1 / ROC-AUC
-            |
-            v
- Out-of-fold predictions
-            |
-            v
- Confusion matrices + ROC curves
-            |
-            v
- Exploratory full-data model fit
-            |
-            v
- Ranked predictive probes
-```
+1. Validate the cached expression matrix and collapse B-cell/T-cell labels into ALL.
+2. Inspect global variation with exploratory PCA.
+3. Fit zero-variance filtering, selection of 100 features, and each classifier inside stratified five-fold cross-validation.
+4. Save fold metrics and pooled out-of-fold predictions, confusion matrices, and ROC curves.
+5. Fit a separate full-data model for exploratory probe ranking.
 
----
+**Read the evidence:** [model comparison](results/tables/model_comparison.csv), [out-of-fold predictions](results/tables/cross_validated_predictions.csv), and [probe ranking](results/tables/top_predictive_probes.csv). The [analysis script](scripts/run_analysis.py) defines preprocessing and evaluation.
 
 ## Why Leakage-Safe Feature Selection Matters
 
@@ -98,7 +63,7 @@ To reduce this risk, feature selection is placed **inside the scikit-learn pipel
 
 ## Results
 
-## 1. Principal Component Analysis
+### 1. Principal Component Analysis
 
 The first two principal components explained:
 
@@ -122,7 +87,7 @@ The later supervised models can still perform strongly because they select expre
 
 ---
 
-## 2. Cross-Validated Model Comparison
+### 2. Cross-Validated Model Comparison
 
 Three classifiers were evaluated using the same **stratified 5-fold cross-validation** protocol. Table entries are the mean ± sample standard deviation across the five folds (`ddof=1`), not confidence intervals. Fold outcomes are not independent replications.
 
@@ -140,7 +105,7 @@ This is a useful result in a `p >> n` biomedical setting: a more complex model d
 
 ---
 
-## 3. Cross-Validated Confusion Matrices
+### 3. Cross-Validated Confusion Matrices
 
 ### Logistic Regression
 
@@ -183,7 +148,7 @@ XGBoost also correctly classified **69 of 72 patients**.
 
 ---
 
-## 4. ROC Analysis
+### 4. ROC Analysis
 
 ![Cross-validated ROC curves](results/figures/roc_curves.png)
 
@@ -201,7 +166,7 @@ That is expected because the table reports the **mean AUC calculated separately 
 
 ---
 
-## 5. Exploratory Predictive Probe Ranking
+### 5. Exploratory Predictive Probe Ranking
 
 After cross-validation, a Logistic Regression pipeline was fit to the complete dataset for **exploratory feature interpretation only**.
 
@@ -236,51 +201,13 @@ A biological interpretation should record the annotation release, map each probe
 
 ---
 
-## Key Findings
+## What the comparison establishes
 
-1. The first two PCA dimensions explain about **34.2%** of total expression variation but do not cleanly separate ALL from AML.
-2. Leakage-safe supervised models nevertheless classify the two leukemia groups with high cross-validated performance.
-3. **Logistic Regression** achieved the highest mean accuracy (**97.1%**) and F1 (**0.960**).
-4. The pooled out-of-fold Logistic Regression predictions correctly classified **70 of 72 patients**.
-5. Random Forest and XGBoost achieved extremely high ranking performance, with fold-wise mean ROC-AUC values of **1.000**.
-6. The saved ranking provides historical probe identifiers for follow-up annotation and biological review.
-7. Because the cohort is small and high-dimensional, the predictive feature ranking should be treated as exploratory rather than as a biomarker discovery claim.
+Logistic Regression has the highest mean accuracy and F1 in the saved five-fold run, with 70 of 72 pooled out-of-fold predictions correct. Its advantage over the ensemble models is only one patient in this cohort; this run does not establish a statistically reliable or externally generalizable model ranking.
 
----
+The PCA and supervised results answer different questions. PCA describes large sources of overall variation; the classifier uses labeled training folds to select discriminative features. Strong classification need not produce clean separation in the first two PCA dimensions.
 
-## Statistical and Machine-Learning Notes
-
-## Stratified Cross-Validation
-
-Stratified folds preserve approximately the same ALL/AML class proportions in each training and validation split.
-
-This is especially useful for a small dataset where random splits could otherwise produce uneven class distributions.
-
-## Feature Selection
-
-The pipeline uses:
-
-```text
-VarianceThreshold
-        ↓
-SelectKBest(f_classif, k=100)
-        ↓
-Classifier
-```
-
-The feature-selection step is re-fit independently inside every training fold.
-
-## F1 Score
-
-F1 balances precision and recall for the AML class and is useful because the dataset contains more ALL than AML samples.
-
-## ROC-AUC
-
-ROC-AUC evaluates how well a model ranks AML samples above ALL samples across possible classification thresholds.
-
-It is therefore possible for a model to have a near-perfect ROC-AUC while still making several mistakes at the default classification threshold.
-
----
+F1 and ROC-AUC use AML as the positive class. The distinction between fold-mean and pooled AUC matters when checking the tables against the plots.
 
 ## Limitations
 
@@ -299,31 +226,21 @@ This analysis has several important limitations:
 
 ---
 
-## Reproducibility
+## Reproducing the analysis
 
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-Run the complete analysis:
+Start in the repository root and use a separate environment:
 
 ```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
 python scripts/run_analysis.py
 ```
 
-The script will:
+On Windows use `.venv\Scripts\Activate.ps1`. Existing output files can be overwritten; preserve committed results separately before comparing a rerun. Requirements are not a complete environment lock. Record package versions and input checksums alongside generated tables. Committed figures and tables document a previous run; this documentation update did not rerun the analysis.
 
-- download the normalized Golub dataset,
-- validate the expected cohort,
-- collapse B-cell and T-cell ALL into the ALL class,
-- perform exploratory PCA,
-- select expression features inside each cross-validation fold,
-- evaluate Logistic Regression, Random Forest, and XGBoost,
-- create cross-validated predictions, confusion matrices, and ROC curves,
-- fit an exploratory final model,
-- and save a ranked list of predictive probes.
+Classification metrics describe five-fold stratified cross-validation on this dataset, not independent external validation. Feature selection is inside each model pipeline. PCA and full-data probe rankings are exploratory and should not be interpreted as externally validated biomarkers.
+
 
 ---
 
@@ -391,17 +308,3 @@ Northeastern University
 
 Research interests include **biomedical informatics, computational biology, transcriptomics, machine learning, trustworthy AI, and reproducible computational research**.
 
-## Reproduction notes
-
-Start in the repository root and use a separate environment:
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python scripts/run_analysis.py
-```
-
-On Windows use `.venv\Scripts\Activate.ps1`. Existing output files can be overwritten; preserve committed results separately before comparing a rerun. Requirements are not a complete environment lock. Record package versions and input checksums alongside generated tables. Committed figures and tables document a previous run; this documentation update did not rerun the analysis.
-
-Classification metrics describe five-fold stratified cross-validation on this dataset, not independent external validation. Feature selection is inside each model pipeline. PCA and full-data probe rankings are exploratory and should not be interpreted as externally validated biomarkers.
